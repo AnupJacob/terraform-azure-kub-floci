@@ -1,7 +1,7 @@
 # ☁️ Azure & Kubernetes Infrastructure with Terraform (`terraform-azure-kub-floci`)
 
 ![Terraform](https://shields.io)
-![AWS](https://shields.io)
+![Azure](https://shields.io)
 ![Kubernetes](https://shields.io)
 
 ## 🎯 Project Purpose
@@ -19,7 +19,7 @@ This repository serves as a hands-on engineering showcase demonstrating end-to-e
 
 ## 📂 Repository Structure
 ```text
-terraform-aws-floci/
+terraform-azure-kub-floci/
 ├── Environments/       # Environment-specific configurations & tfvars
 ├── modules/            # Reusable Terraform infrastructure & K8s modules
 ├── main.tf             # Core resource orchestration
