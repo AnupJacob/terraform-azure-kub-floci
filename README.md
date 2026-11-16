@@ -55,6 +55,6 @@ terraform init
 # 3. Review the execution plan
 terraform plan
 
-# 4. Provision the AWS infrastructure & Kubernetes cluster
+# 4. Provision the Azure infrastructure & Kubernetes cluster
 terraform apply
 ```
