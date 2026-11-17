@@ -1,0 +1,13 @@
+# docker-compose.yml
+services:
+  floci-az:
+    image: floci/floci-az:latest
+    container_name: floci-azure
+    ports:
+      - "4577:4577"
+    environment:
+      FLOCI_AZ_TLS_ENABLED: "true"
+      FLOCI_PERSISTENCE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./floci-data:/app/data
