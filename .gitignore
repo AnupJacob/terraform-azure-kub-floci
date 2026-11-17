@@ -1,0 +1,28 @@
+# Terraform files
+*.terraform*
+*.tfstate*
+
+# Secret file
+*.txt
+*.tfvars
+
+#Output state file for checks
+*outputstate.output
+
+#private keys for SSH connections
+*.pem
+
+#.github files
+.github/
+
+#.DSstore files
+*.DS_Store
+
+# Script files used for testing and flushing kubernetes resources
+EKS_Cluster_Flush.sh
+
+#floci-data
+*floci-data
+
+#certificate file
+*.crt

@@ -1,0 +1,6 @@
+FROM floci/floci-az:latest
+
+ENV FLOCI_AZ_TLS_ENABLED="true"
+ENV FLOCI_PERSISTENCE="true"
+
+EXPOSE 4577
