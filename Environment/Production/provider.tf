@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "Application_Test"
     workspaces {
-      project = "Production-Azure-Kub-Floci"
+      project = "Azure-Kub-Floci"
       name    = "terraform-azure-kub-floci-prod"
     }
   }

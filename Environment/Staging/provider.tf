@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "Application_Test"
     workspaces {
-      project = "Staging-Azure-Kub-Floci"
+      project = "Azure-Kub-Floci"
       name    = "terraform-azure-kub-floci-staging"
     }
   }
@@ -39,5 +39,5 @@ resource "azurerm_virtual_network" "azure-network-staging" {
   name                = "azure-network-dev"
   resource_group_name = azurerm_resource_group.azure_rg_staging_floci.name
   location            = azurerm_resource_group.azure_rg_staging_floci.location
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.0.1.0/16"]
 }
