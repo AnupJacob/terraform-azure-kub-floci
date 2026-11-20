@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "Application_Test"
     workspaces {
-      project = "Azure-Kub-Floci"
+      project = "Anups-Azure-Kube-Floci"
       name    = "terraform-azure-kub-floci-staging"
     }
   }
