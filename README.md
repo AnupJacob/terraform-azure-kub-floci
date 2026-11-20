@@ -34,6 +34,7 @@ terraform-azure-kub-floci/
 ## 🛠️ Skills & Concepts Demonstrated
 * **Infrastructure as Code (Terraform):** Module authoring, variable parameterization, dependency management, and declarative state workflows.
 * **Container Orchestration (Kubernetes):** Cluster bootstrapping, networking setup, and declarative workload readiness.
+* **Cloud Architecture (Azure):** Managed Identities & RBAC, Virtual Networks (VNet), Network Security Groups (NSGs), and AKS cluster provisioning
 
 ---
 
