@@ -30,7 +30,6 @@ variable "metadata_host" {
   description = "Metadata_host for Floci"
 }
 
-
 variable "environments" {
   type        = string
   default     = "staging"
