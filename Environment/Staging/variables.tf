@@ -56,8 +56,8 @@ variable "app_subnet_cidr" {
 }
 
 variable "aks_subnet_cidr" {
-  type    = string
-  default = "10.10.5.0/24"
+  type        = string
+  default     = "10.10.5.0/24"
   description = "aks subnet cidr"
 }
 
