@@ -19,8 +19,8 @@ variable "client_secret" {
 }
 
 variable "location" {
-  type        = string
-  default     = "West Europe"
+  type        = list(string)
+  default     = ["West Europe", "North Europe"]
   description = "Infrastructure location"
 }
 
