@@ -74,7 +74,7 @@ variable "aks_vm_size" {
 
 variable "project_name" {
   type        = string
-  default     = "Anups-Azure-Kube-Floci"
+  default     = "anups-azure-kube-floci"
   description = "Name of the Project"
 }
 
@@ -96,7 +96,7 @@ variable "db_admin_user" {
 }
 
 variable "db_sku_name" {
-  type    = string
+  type = string
 }
 
 variable "vm_size" {

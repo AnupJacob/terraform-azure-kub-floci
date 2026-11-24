@@ -36,3 +36,37 @@ output "cluster_ca_certificate" {
   value       = try(azurerm_kubernetes_cluster.azure-kube-cluster-main.kube_config[0].cluster_ca_certificate, null)
   sensitive   = true
 }
+
+
+# Append to modules/output.tf
+output "jumpbox_public_ip" {
+  description = "Public IP address of the Jumpbox VM"
+  value       = azurerm_public_ip.jumpbox.ip_address
+}
+
+output "private_app_vm_ip" {
+  description = "Private IP address of the App VM"
+  value       = azurerm_network_interface.private_my_app_ni.private_ip_address
+}
+
+output "vm_ssh_private_key" {
+  description = "Generated SSH private key for Jumpbox and Private VMs"
+  value       = tls_private_key.vm_ssh.private_key_pem
+  sensitive   = true
+}
+
+output "postgres_fqdn" {
+  description = "Private Fully Qualified Domain Name(FQDN) of the PostgreSQL Flexible Server"
+  value       = azurerm_postgresql_flexible_server.main.fqdn
+}
+
+output "postgres_admin_password" {
+  description = "Generated PostgreSQL administrator password"
+  value       = random_password.db_admin.result
+  sensitive   = true
+}
+
+output "postgres_db_name" {
+  description = "Provisioned PostgreSQL database name"
+  value       = azurerm_postgresql_flexible_server_database.app.name
+}
