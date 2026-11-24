@@ -55,9 +55,8 @@ variable "app_subnet_cidr" {
 }
 
 variable "aks_subnet_cidr" {
-  type    = string
-  default = "10.10.1.0/24"
-
+  type        = string
+  default     = "10.10.1.0/24"
   description = "aks subnet cidr"
 }
 
@@ -77,4 +76,35 @@ variable "project_name" {
   type        = string
   default     = "Anups-Azure-Kube-Floci"
   description = "Name of the Project"
+}
+
+variable "db_name" {
+  type    = string
+  default = "my_app_dev_db"
+}
+
+variable "base_cidr_block" {
+  type = string
+}
+
+variable "vm_admin_user" {
+  type = string
+}
+
+variable "db_admin_user" {
+  type = string
+}
+
+variable "db_sku_name" {
+  type    = string
+}
+
+variable "vm_size" {
+  type    = string
+  default = "My app VM's size"
+}
+
+variable "db_storage_mb" {
+  type    = number
+  default = 32768
 }

@@ -13,4 +13,8 @@ module "dev_infrastructure" {
   kubernetes_version = var.kubernetes_version
   aks_node_count     = var.aks_node_count
   aks_vm_size        = var.aks_vm_size
+  base_cidr_block    = var.base_cidr_block
+  db_admin_user      = var.db_admin_user
+  vm_admin_user      = var.vm_admin_user
+  db_name            = var.db_name
 }

@@ -10,6 +10,6 @@ output "aks_cluster_names" {
 
 output "aks_kube_config_hosts" {
   description = "Map of region to AKS API server endpoint"
-  sensitive = true
+  sensitive   = true
   value       = { for region, mod in module.dev_infrastructure : region => mod.kube_config_host }
 }
