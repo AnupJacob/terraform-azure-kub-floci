@@ -1,8 +1,3 @@
-locals {
-  location_slug = lower(replace(var.location, " ", ""))
-  name_prefix   = "${var.project_name}-${var.environments}-${local.location_slug}"
-}
-
 resource "azurerm_resource_group" "azure-rg" {
   name     = "${local.name_prefix}-rg"
   location = var.location
