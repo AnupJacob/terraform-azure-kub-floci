@@ -74,6 +74,26 @@ variable "aks_vm_size" {
 
 variable "project_name" {
   type        = string
-  default     = "Anups-Azure-Kube-Floci"
+  default     = "anups-azure-kube-floci"
   description = "Name of the Project"
+}
+
+variable "base_cidr_block" {
+  type        = string
+  description = "Base CIDR for staging environment"
+}
+
+variable "db_admin_user" {
+  type        = string
+  description = "Database admin username"
+}
+
+variable "vm_admin_user" {
+  type        = string
+  description = "Admin username for the Azure Virtual Machines hosting the application"
+}
+
+variable "db_name" {
+  type    = string
+  default = "my_app_staging_db"
 }
