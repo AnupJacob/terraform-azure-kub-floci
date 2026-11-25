@@ -94,7 +94,7 @@ variable "vm_admin_user" {
 }
 
 variable "db_name" {
-  type    = string
-  default = "my_app_prod_db"
+  type        = string
+  default     = "my_app_prod_db"
   description = "Database name for prod"
 }
