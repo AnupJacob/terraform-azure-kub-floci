@@ -74,6 +74,27 @@ variable "aks_vm_size" {
 
 variable "project_name" {
   type        = string
-  default     = "Anups-Azure-Kube-Floci"
+  default     = "anups-azure-kube-floci"
   description = "Name of the Project"
+}
+
+variable "base_cidr_block" {
+  type        = string
+  description = "Base CIDR for Production environment"
+}
+
+variable "db_admin_user" {
+  type        = string
+  description = "Database admin username for prod"
+}
+
+variable "vm_admin_user" {
+  type        = string
+  description = "Admin username for the Azure Virtual Machines hosting the application for prod"
+}
+
+variable "db_name" {
+  type    = string
+  default = "my_app_prod_db"
+  description = "Database name for prod"
 }
