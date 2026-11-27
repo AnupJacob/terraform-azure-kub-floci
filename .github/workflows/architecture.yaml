@@ -1,4 +1,4 @@
-name: Generate Terraform Architecture Diagram (Isolated Env)
+name: Terraform Architecture Diagram (Azure + Floci)
 
 on:
   pull_request:
@@ -29,6 +29,14 @@ jobs:
       matrix:
         environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["dev","staging","prod"]') }}
 
+    env:
+      FLOCI_AZURE_ENDPOINT: "http://localhost:4577"
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SKIP_PROVIDER_REGISTRATION: "true"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,30 +46,32 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: Install Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz
+      - name: Install Floci CLI and Graphviz
+        run: |
+          curl -fsSL https://floci.io/install.sh | sh
+          sudo apt-get update && sudo apt-get install -y graphviz
 
-      - name: Terraform Init
+      - name: Start Azure Floci Emulator
+        run: |
+          floci az start
+          sleep 2
+
+      - name: Terraform Init (Azure + Floci)
         run: terraform init -input=false
-        env:
-          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-      - name: Select Terraform Workspace (${{ matrix.environment }})
+      - name: Select Environment Workspace (${{ matrix.environment }})
         run: terraform workspace select ${{ matrix.environment }} || terraform workspace new ${{ matrix.environment }}
 
-      - name: Generate Terraform Plan for ${{ matrix.environment }}
+      - name: Run Terraform Plan (${{ matrix.environment }})
         run: |
-          VAR_FILE="Environment/${{ matrix.environment }}.tfvars"
+          VAR_FILE="envs/${{ matrix.environment }}.tfvars"
           if [ -f "$VAR_FILE" ]; then
             terraform plan -input=false -var-file="$VAR_FILE" -out="tfplan-${{ matrix.environment }}.binary"
           else
             terraform plan -input=false -out="tfplan-${{ matrix.environment }}.binary"
           fi
 
-      - name: Render Diagram for ${{ matrix.environment }}
+      - name: Render Architecture Diagram (${{ matrix.environment }})
         run: |
           terraform graph -type=plan > "graph-${{ matrix.environment }}.dot"
           dot -Tpng "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.png"
