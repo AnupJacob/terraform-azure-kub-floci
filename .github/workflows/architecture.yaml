@@ -56,24 +56,41 @@ jobs:
           floci az start
           sleep 2
 
-      - name: Terraform Init (Azure + Floci)
+      - name: Remove HCP Terraform Cloud Block for Local Execution
+        run: |
+          python3 - << 'EOF'
+          import pathlib, re
+          for tf_file in pathlib.Path(".").rglob("*.tf"):
+              text = tf_file.read_text(encoding="utf-8")
+              cleaned = re.sub(r'cloud\s*\{(?:[^{}]|\{[^{}]*\})*\}', '', text, flags=re.DOTALL)
+              if cleaned != text:
+                  tf_file.write_text(cleaned, encoding="utf-8")
+          EOF
+
+      - name: Terraform Init (Local State + Floci)
         run: terraform init -input=false
 
       - name: Select Environment Workspace (${{ matrix.environment }})
         run: terraform workspace select ${{ matrix.environment }} || terraform workspace new ${{ matrix.environment }}
 
-      - name: Run Terraform Plan (${{ matrix.environment }})
+      - name: Run Terraform Plan to Output File (${{ matrix.environment }})
         run: |
           VAR_FILE="envs/${{ matrix.environment }}.tfvars"
+          PLAN_BIN="tfplan-${{ matrix.environment }}.binary"
+          PLAN_JSON="tfplan-${{ matrix.environment }}.json"
+
           if [ -f "$VAR_FILE" ]; then
-            terraform plan -input=false -var-file="$VAR_FILE" -out="tfplan-${{ matrix.environment }}.binary"
+            terraform plan -input=false -var-file="$VAR_FILE" -out="$PLAN_BIN"
           else
-            terraform plan -input=false -out="tfplan-${{ matrix.environment }}.binary"
+            terraform plan -input=false -out="$PLAN_BIN"
           fi
 
-      - name: Render Architecture Diagram (${{ matrix.environment }})
-        run: |
+          terraform show -json "$PLAN_BIN" > "$PLAN_JSON"
           terraform graph -type=plan > "graph-${{ matrix.environment }}.dot"
+
+      - name: Generate Diagram from Plan Output (${{ matrix.environment }})
+        run: |
+          test -s "tfplan-${{ matrix.environment }}.json"
           dot -Tpng "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.png"
           dot -Tsvg "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.svg"
 
@@ -83,6 +100,7 @@ jobs:
         with:
           name: terraform-architecture-diagram-${{ matrix.environment }}
           path: |
+            tfplan-${{ matrix.environment }}.json
             architecture-${{ matrix.environment }}.png
             architecture-${{ matrix.environment }}.svg
 
