@@ -6,6 +6,9 @@ on:
       - "**.tf"
       - "**.tfvars"
       - ".github/workflows/architecture.yaml"
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       environment:
