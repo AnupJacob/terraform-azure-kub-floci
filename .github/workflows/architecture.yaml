@@ -30,7 +30,7 @@ jobs:
         environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["dev","staging","prod"]') }}
 
     env:
-      FLOCI_AZURE_ENDPOINT: "http://localhost:4577"
+      TF_VAR_metadata_host: "127.0.0.1:4577"
       TF_VAR_subscription_id: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
       TF_VAR_tenant_id: ${{ secrets.TF_VAR_TENANT_ID }}
       TF_VAR_client_id: ${{ secrets.TF_VAR_CLIENT_ID }}
@@ -55,6 +55,7 @@ jobs:
         run: |
           floci az start
           sleep 2
+          echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
 
       - name: Remove HCP Terraform Cloud Block for Local Execution
         run: |
