@@ -4,16 +4,13 @@
 
 # Secret file
 *.txt
-*.tfvars
+azure_secrets.tfvars
 
 #Output state file for checks
 *outputstate.output
 
 #private keys for SSH connections
 *.pem
-
-#.github files
-.github/
 
 #.DSstore files
 *.DS_Store

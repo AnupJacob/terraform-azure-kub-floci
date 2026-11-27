@@ -1,0 +1,125 @@
+name: Terraform Architecture Diagram (Azure + Floci)
+
+on:
+  pull_request:
+    paths:
+      - "**.tf"
+      - "**.tfvars"
+      - ".github/workflows/architecture.yaml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select the environment:"
+        type: choice
+        required: true
+        default: "Dev"
+        options:
+          - Dev
+          - Staging
+          - Production
+
+permissions:
+  contents: read
+
+jobs:
+  diagram:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["Dev","Staging","Production"]') }}
+
+    env:
+      TF_VAR_metadata_host: "127.0.0.1:4577"
+      TF_VAR_subscription_id: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
+      TF_VAR_tenant_id: ${{ secrets.TF_VAR_TENANT_ID }}
+      TF_VAR_client_id: ${{ secrets.TF_VAR_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.TF_VAR_CLIENT_SECRET }}
+      TF_VAR_vm_admin_user: ${{ secrets.VM_ADMIN_USER }}
+      TF_VAR_db_admin_user: ${{ secrets.DB_ADMIN_USER }}
+#      ARM_SKIP_PROVIDER_REGISTRATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install Floci CLI and Graphviz
+        run: |
+          curl -fsSL https://floci.io/install.sh | sh
+          sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Set Environment Directory (${{ matrix.environment }})
+        run: |
+          case "${{ matrix.environment }}" in
+            Dev) echo "ENV_DIR=Environment/Dev" >> $GITHUB_ENV ;;
+            Staging) echo "ENV_DIR=Environment/Staging" >> $GITHUB_ENV ;;
+            Production) echo "ENV_DIR=Environment/Production" >> $GITHUB_ENV ;;
+          esac
+
+      - name: Start Azure Floci Emulator
+        run: |
+          floci az start
+          sleep 2
+          echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          curl -sf http://127.0.0.1:4577/_floci/tls-cert -o /tmp/floci-az.crt
+          sudo cp /tmp/floci-az.crt /usr/local/share/ca-certificates/floci-az.crt
+          sudo update-ca-certificates
+
+      - name: Remove HCP Terraform Cloud Block for Local Execution
+        run: |
+          python3 - << 'EOF'
+          import pathlib, re
+          for tf_file in pathlib.Path(".").rglob("*.tf"):
+              text = tf_file.read_text(encoding="utf-8")
+              cleaned = re.sub(r'cloud\s*\{(?:[^{}]|\{[^{}]*\})*\}', '', text, flags=re.DOTALL)
+              if cleaned != text:
+                  tf_file.write_text(cleaned, encoding="utf-8")
+          EOF
+
+      - name: Terraform Init (Local State + Floci)
+        working-directory: ${{ env.ENV_DIR }}
+        run: terraform init -input=false
+
+      - name: Run Terraform Plan to Output File (${{ matrix.environment }})
+        working-directory: ${{ env.ENV_DIR }}
+        run: |
+          PLAN_BIN="tfplan-${{ matrix.environment }}.binary"
+          PLAN_JSON="tfplan-${{ matrix.environment }}.json"
+          GRAPH_DOT="graph-${{ matrix.environment }}.dot"
+    
+          terraform plan -input=false -out="$PLAN_BIN"
+          terraform show -json "$PLAN_BIN" > "$PLAN_JSON"
+          terraform graph -type=plan > "$GRAPH_DOT"
+
+      - name: Render Architecture Diagram (${{ matrix.environment }})
+        working-directory: ${{ env.ENV_DIR }}
+        run: |
+          PLAN_JSON="tfplan-${{ matrix.environment }}.json"
+          GRAPH_DOT="graph-${{ matrix.environment }}.dot"
+          
+          test -s "$PLAN_JSON"
+          test -s "$GRAPH_DOT"
+          dot -Tpng "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.png"
+          dot -Tsvg "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.svg"
+
+      - name: Upload Diagram Artifact (${{ matrix.environment }})
+        id: upload_diagram
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-architecture-diagram-${{ matrix.environment }}
+          path: |
+            ${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.png
+            ${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.svg
+
+      - name: Output Downloadable Diagram Link (${{ matrix.environment }})
+        run: |
+          echo "[${{ matrix.environment }}] Download diagram artifact: ${{ steps.upload_diagram.outputs.artifact-url }}"
+          {
+            echo "### Environment: \`${{ matrix.environment }}\`"
+            echo "- [Download terraform-architecture-diagram-${{ matrix.environment }} ZIP](${{ steps.upload_diagram.outputs.artifact-url }})"
+          } >> $GITHUB_STEP_SUMMARY
