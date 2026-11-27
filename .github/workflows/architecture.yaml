@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["dev","staging","prod"]') }}
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["Dev","staging","production"]') }}
 
     env:
       TF_VAR_metadata_host: "127.0.0.1:4577"
