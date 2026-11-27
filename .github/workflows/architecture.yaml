@@ -56,6 +56,9 @@ jobs:
           floci az start
           sleep 2
           echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          curl -sf http://127.0.0.1:4577/_floci/tls-cert -o /tmp/floci-az.crt
+          sudo cp /tmp/floci-az.crt /usr/local/share/ca-certificates/floci-az.crt
+          sudo update-ca-certificates
 
       - name: Remove HCP Terraform Cloud Block for Local Execution
         run: |
