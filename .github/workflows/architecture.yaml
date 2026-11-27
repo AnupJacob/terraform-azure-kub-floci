@@ -99,8 +99,8 @@ jobs:
       - name: Render Architecture Diagram (${{ matrix.environment }})
         run: |
           test -s "tfplan-${{ matrix.environment }}.json"
-          dot -Tpng "${{ env.ENV_DIR }}/graph-${{ matrix.environment }}.dot" -o "${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.*"
-          dot -Tsvg "${{ env.ENV_DIR }}/graph-${{ matrix.environment }}.dot" -o "${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.*"
+          dot -Tpng "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.png"
+          dot -Tsvg "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.svg"
 
       - name: Upload Diagram Artifact (${{ matrix.environment }})
         id: upload_diagram
