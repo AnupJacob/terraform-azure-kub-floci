@@ -97,8 +97,13 @@ jobs:
           terraform graph -type=plan > "$GRAPH_DOT"
 
       - name: Render Architecture Diagram (${{ matrix.environment }})
+        working-directory: ${{ env.ENV_DIR }}
         run: |
-          test -s "tfplan-${{ matrix.environment }}.json"
+          PLAN_JSON="tfplan-${{ matrix.environment }}.json"
+          GRAPH_DOT="graph-${{ matrix.environment }}.dot"
+          
+          test -s "$PLAN_JSON"
+          test -s "$GRAPH_DOT"
           dot -Tpng "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.png"
           dot -Tsvg "$GRAPH_DOT" -o "architecture-${{ matrix.environment }}.svg"
 
