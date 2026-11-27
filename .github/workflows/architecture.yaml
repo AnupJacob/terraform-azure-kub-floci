@@ -31,10 +31,10 @@ jobs:
 
     env:
       FLOCI_AZURE_ENDPOINT: "http://localhost:4577"
-      TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
-      TF_VAR_CLIENT_SECRET: ${{ secrets.TF_VAR_CLIENT_SECRET }}
-      TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
-      TF_VAR_TENANT_ID: ${{ secrets.TF_VAR_TENANT_ID }}
+      TF_VAR_subscription_id: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
+      TF_VAR_tenant_id: ${{ secrets.TF_VAR_TENANT_ID }}
+      TF_VAR_client_id: ${{ secrets.TF_VAR_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.TF_VAR_CLIENT_SECRET }}
 #      ARM_SKIP_PROVIDER_REGISTRATION: "true"
 
     steps:
