@@ -4,7 +4,7 @@
 
 # Secret file
 *.txt
-*.tfvars
+azure_secrets.tfvars
 
 #Output state file for checks
 *outputstate.output
