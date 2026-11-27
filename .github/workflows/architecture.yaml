@@ -51,6 +51,14 @@ jobs:
           curl -fsSL https://floci.io/install.sh | sh
           sudo apt-get update && sudo apt-get install -y graphviz
 
+      - name: Set Environment Directory (${{ matrix.environment }})
+        run: |
+          case "${{ matrix.environment }}" in
+            dev) echo "ENV_DIR=Environment/Dev" >> $GITHUB_ENV ;;
+            staging) echo "ENV_DIR=Environment/Staging" >> $GITHUB_ENV ;;
+            prod) echo "ENV_DIR=Environment/Production" >> $GITHUB_ENV ;;
+          esac
+
       - name: Start Azure Floci Emulator
         run: |
           floci az start
@@ -72,17 +80,16 @@ jobs:
           EOF
 
       - name: Terraform Init (Local State + Floci)
+        working-directory: ${{ env.ENV_DIR }}
         run: terraform init -input=false
 
-      - name: Select Environment Workspace (${{ matrix.environment }})
-        run: terraform workspace select ${{ matrix.environment }} || terraform workspace new ${{ matrix.environment }}
-
       - name: Run Terraform Plan to Output File (${{ matrix.environment }})
+        working-directory: ${{ env.ENV_DIR }}
         run: |
           PLAN_BIN="tfplan-${{ matrix.environment }}.binary"
           PLAN_JSON="tfplan-${{ matrix.environment }}.json"
           GRAPH_DOT="graph-${{ matrix.environment }}.dot"
-
+    
           terraform plan -input=false -out="$PLAN_BIN"
           terraform show -json "$PLAN_BIN" > "$PLAN_JSON"
           terraform graph -type=plan > "$GRAPH_DOT"
@@ -90,8 +97,8 @@ jobs:
       - name: Render Architecture Diagram (${{ matrix.environment }})
         run: |
           test -s "tfplan-${{ matrix.environment }}.json"
-          dot -Tpng "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.png"
-          dot -Tsvg "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.svg"
+          dot -Tpng "${{ env.ENV_DIR }}/graph-${{ matrix.environment }}.dot" -o "${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.*"
+          dot -Tsvg "${{ env.ENV_DIR }}/graph-${{ matrix.environment }}.dot" -o "${{ env.ENV_DIR }}/architecture-${{ matrix.environment }}.*"
 
       - name: Upload Diagram Artifact (${{ matrix.environment }})
         id: upload_diagram
