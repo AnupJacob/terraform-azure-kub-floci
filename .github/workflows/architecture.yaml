@@ -1,0 +1,85 @@
+name: Generate Terraform Architecture Diagram (Isolated Env)
+
+on:
+  pull_request:
+    paths:
+      - "**.tf"
+      - "**.tfvars"
+      - ".github/workflows/architecture.yaml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select the environment:"
+        type: choice
+        required: true
+        default: "Dev"
+        options:
+          - Dev
+          - Staging
+          - Production
+
+permissions:
+  contents: read
+
+jobs:
+  diagram:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', inputs.environment)) || fromJson('["dev","staging","prod"]') }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Terraform Init
+        run: terraform init -input=false
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+      - name: Select Terraform Workspace (${{ matrix.environment }})
+        run: terraform workspace select ${{ matrix.environment }} || terraform workspace new ${{ matrix.environment }}
+
+      - name: Generate Terraform Plan for ${{ matrix.environment }}
+        run: |
+          VAR_FILE="Environment/${{ matrix.environment }}.tfvars"
+          if [ -f "$VAR_FILE" ]; then
+            terraform plan -input=false -var-file="$VAR_FILE" -out="tfplan-${{ matrix.environment }}.binary"
+          else
+            terraform plan -input=false -out="tfplan-${{ matrix.environment }}.binary"
+          fi
+
+      - name: Render Diagram for ${{ matrix.environment }}
+        run: |
+          terraform graph -type=plan > "graph-${{ matrix.environment }}.dot"
+          dot -Tpng "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.png"
+          dot -Tsvg "graph-${{ matrix.environment }}.dot" -o "architecture-${{ matrix.environment }}.svg"
+
+      - name: Upload Diagram Artifact (${{ matrix.environment }})
+        id: upload_diagram
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-architecture-diagram-${{ matrix.environment }}
+          path: |
+            architecture-${{ matrix.environment }}.png
+            architecture-${{ matrix.environment }}.svg
+
+      - name: Output Downloadable Diagram Link (${{ matrix.environment }})
+        run: |
+          echo "[${{ matrix.environment }}] Download diagram artifact: ${{ steps.upload_diagram.outputs.artifact-url }}"
+          {
+            echo "### Environment: \`${{ matrix.environment }}\`"
+            echo "- [Download terraform-architecture-diagram-${{ matrix.environment }} ZIP](${{ steps.upload_diagram.outputs.artifact-url }})"
+          } >> $GITHUB_STEP_SUMMARY

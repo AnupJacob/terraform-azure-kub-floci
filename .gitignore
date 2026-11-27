@@ -12,9 +12,6 @@
 #private keys for SSH connections
 *.pem
 
-#.github files
-.github/
-
 #.DSstore files
 *.DS_Store
 
